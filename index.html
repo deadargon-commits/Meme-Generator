@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FROST MEMES AI – Instant Meme Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .transition-page {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .page-hidden { display: none; opacity: 0; transform: translateY(10px); }
+    .page-visible { display: block; opacity: 1; transform: translateY(0); }
+    .meme-card:hover .meme-overlay { opacity: 1; }
+    .meme-overlay { opacity: 0; transition: opacity 0.2s; }
+    .skeleton {
+      background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .nav-link.active { color: #38bdf8; font-weight: 600; }
+    .admin-table-wrap { overflow-x: auto; }
+    .bottom-nav {
+      display: flex;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid #e2e8f0;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+      z-index: 40;
+      justify-content: space-around;
+      padding: 6px 0;
+    }
+    @media (min-width: 641px) {
+      .bottom-nav { display: none; }
+    }
+    .modal-backdrop {
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================ -->
+  <!-- Navbar -->
+  <!-- ============================================================ -->
+  <nav class="bg-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <!-- Logo -->
+        <div class="flex items-center space-x-2 cursor-pointer" onclick="navigateTo('home')">
+          <span class="text-2xl font-bold text-slate-800">❄️ FROST</span>
+          <span class="text-2xl font-bold text-sky-500">MEMES</span>
+          <span class="text-sm bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full">AI</span>
+        </div>
+
+        <!-- Desktop nav -->
+        <div class="desktop-nav flex items-center space-x-6">
+          <a href="#" class="nav-link text-slate-600 hover:text-sky-500" data-page="home">Home</a>
+          <a href="#" class="nav-link text-slate-600 hover:text-sky-500" data-page="gallery">Gallery</a>
+          <a href="#" class="nav-link text-slate-600 hover:text-sky-500" data-page="generate">Generate</a>
+          <a href="#" class="nav-link text-slate-600 hover:text-sky-500" data-page="pricing">Pricing</a>
+          <a href="#" class="nav-link text-slate-600 hover:text-sky-500" data-page="about">About</a>
+          <a href="#" class="nav-link text-slate-600 hover:text-sky-500" data-page="contact">Contact</a>
+          <a href="#" class="nav-link text-slate-600 hover:text-sky-500" data-page="dashboard">
+            <i class="fas fa-user-circle mr-1"></i> Dashboard
+          </a>
+        </div>
+
+        <!-- Mobile hamburger -->
+        <div class="sm:hidden">
+          <button id="menuBtn" class="text-slate-600 focus:outline-none">
+            <i class="fas fa-bars text-2xl"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- Mobile menu -->
+    <div id="mobileMenu" class="hidden sm:hidden bg-white border-t border-slate-200 px-4 pt-2 pb-4 space-y-2">
+      <a href="#" class="block nav-link text-slate-600 hover:text-sky-500" data-page="home">Home</a>
+      <a href="#" class="block nav-link text-slate-600 hover:text-sky-500" data-page="gallery">Gallery</a>
+      <a href="#" class="block nav-link text-slate-600 hover:text-sky-500" data-page="generate">Generate</a>
+      <a href="#" class="block nav-link text-slate-600 hover:text-sky-500" data-page="pricing">Pricing</a>
+      <a href="#" class="block nav-link text-slate-600 hover:text-sky-500" data-page="about">About</a>
+      <a href="#" class="block nav-link text-slate-600 hover:text-sky-500" data-page="contact">Contact</a>
+      <a href="#" class="block nav-link text-slate-600 hover:text-sky-500" data-page="dashboard">
+        <i class="fas fa-user-circle mr-1"></i> Dashboard
+      </a>
+    </div>
+  </nav>
+
+  <!-- ============================================================ -->
+  <!-- Main Content -->
+  <!-- ============================================================ -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20 sm:pb-8">
+
+    <!-- ==================== HOME ==================== -->
+    <section id="page-home" class="page-visible transition-page">
+      <div class="text-center py-12">
+        <h1 class="text-4xl md:text-6xl font-extrabold text-slate-800 leading-tight">
+          Turn Your Ideas into <span class="text-sky-500">Hilarious Memes</span> with AI
+        </h1>
+        <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
+          Generate captions, choose templates, and share – all in seconds, no login required.
+        </p>
+        <div class="mt-8 flex flex-wrap justify-center gap-4">
+          <button onclick="navigateTo('generate')" class="bg-sky-500 hover:bg-sky-600 text-white font-semibold px-8 py-3 rounded-full shadow-lg transition transform hover:scale-105">
+            Create a Meme Now
+          </button>
+          <button onclick="navigateTo('gallery')" class="border border-slate-300 hover:border-sky-400 text-slate-700 px-8 py-3 rounded-full transition">
+            Browse Gallery
+          </button>
+        </div>
+      </div>
+
+      <!-- Features -->
+      <div class="grid md:grid-cols-4 gap-8 py-12">
+        <div class="bg-white p-6 rounded-xl shadow-md text-center">
+          <i class="fas fa-robot text-4xl text-sky-500 mb-4"></i>
+          <h3 class="font-bold text-xl">AI Captions</h3>
+          <p class="text-slate-600">Get clever captions tailored to your idea.</p>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-md text-center">
+          <i class="fas fa-pen-fancy text-4xl text-sky-500 mb-4"></i>
+          <h3 class="font-bold text-xl">Easy Editing</h3>
+          <p class="text-slate-600">Tweak text, swap templates, add your own images.</p>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-md text-center">
+          <i class="fas fa-users text-4xl text-sky-500 mb-4"></i>
+          <h3 class="font-bold text-xl">Community</h3>
+          <p class="text-slate-600">Like, comment, and share memes with others.</p>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-md text-center">
+          <i class="fas fa-gem text-4xl text-sky-500 mb-4"></i>
+          <h3 class="font-bold text-xl">Free Forever</h3>
+          <p class="text-slate-600">No account, no credit card, just memes.</p>
+        </div>
+      </div>
+
+      <!-- Trending preview -->
+      <div class="mt-12">
+        <h2 class="text-2xl font-bold text-slate-800 mb-4">🔥 Trending Memes</h2>
+        <div id="trendingPreview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+          <!-- populated by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== GENERATE ==================== -->
+    <section id="page-generate" class="page-hidden transition-page">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-2xl font-bold text-slate-800">🧠 Meme Generator</h2>
+        <p class="text-slate-500 mb-6">Describe your meme idea and let AI do the rest.</p>
+
+        <div class="bg-white p-6 rounded-xl shadow">
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-slate-700">Your Idea</label>
+              <textarea id="memePrompt" rows="3" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-sky-400" placeholder="e.g., My cat when I eat pizza without sharing"></textarea>
+              <div class="mt-4">
+                <label class="block text-sm font-medium text-slate-700">Category</label>
+                <select id="memeCategory" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-sky-400">
+                  <option value="animals">🐶 Animals</option>
+                  <option value="relatable">🤯 Relatable</option>
+                  <option value="movies">🎬 Movies/TV</option>
+                  <option value="tech">💻 Tech</option>
+                </select>
+              </div>
+              <button id="generateBtn" onclick="handleGenerate()" class="mt-4 w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 rounded-lg transition flex items-center justify-center">
+                <i class="fas fa-wand-magic-sparkles mr-2"></i> Generate Meme
+              </button>
+            </div>
+            <div>
+              <div id="generatedPreview" class="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center h-64 flex flex-col items-center justify-center text-slate-400">
+                <i class="fas fa-image text-4xl mb-2"></i>
+                <p>Your meme preview will appear here</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Result area -->
+          <div id="memeResult" class="hidden mt-6 border-t pt-6">
+            <div class="grid md:grid-cols-2 gap-6">
+              <div>
+                <img id="resultImage" src="" alt="Meme" class="rounded-lg shadow max-w-full" />
+                <div class="mt-4 flex gap-2">
+                  <button onclick="downloadMeme()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg"><i class="fas fa-download mr-1"></i> Download</button>
+                  <button onclick="saveMeme()" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg"><i class="fas fa-save mr-1"></i> Save to Profile</button>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700">Caption</label>
+                <input id="resultCaption" type="text" class="w-full border border-slate-300 rounded-lg px-4 py-2 mb-4" />
+                <label class="block text-sm font-medium text-slate-700">Template</label>
+                <select id="resultTemplate" class="w-full border border-slate-300 rounded-lg px-4 py-2">
+                  <option value="drake">Drake</option>
+                  <option value="distracted">Distracted Boyfriend</option>
+                  <option value="twobuttons">Two Buttons</option>
+                  <option value="expanding">Expanding Brain</option>
+                  <option value="woman">Woman Yelling at Cat</option>
+                </select>
+                <button onclick="updateMemePreview()" class="mt-4 w-full bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold py-2 rounded-lg transition">Update Preview</button>
+                <p class="text-xs text-slate-400 mt-2">Click "Update Preview" to apply changes.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== GALLERY ==================== -->
+    <section id="page-gallery" class="page-hidden transition-page">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+        <h2 class="text-2xl font-bold text-slate-800">🖼️ Community Gallery</h2>
+        <div class="flex flex-wrap gap-2 mt-2 md:mt-0">
+          <input id="gallerySearch" type="text" placeholder="Search memes..." class="border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-sky-400" oninput="renderGallery()" />
+          <select id="galleryCategory" class="border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-sky-400" onchange="renderGallery()">
+            <option value="all">All Categories</option>
+            <option value="Animals">🐶 Animals</option>
+            <option value="Funny">😂 Funny</option>
+            <option value="Relatable">🤯 Relatable</option>
+            <option value="Movies">🎬 Movies/TV</option>
+            <option value="Tech">💻 Tech</option>
+          </select>
+          <select id="gallerySort" class="border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-sky-400" onchange="renderGallery()">
+            <option value="latest">Latest</option>
+            <option value="trending">Trending</option>
+            <option value="top">Top</option>
+          </select>
+        </div>
+      </div>
+      <div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <!-- populated by JS -->
+      </div>
+    </section>
+
+    <!-- ==================== MEME DETAIL (modal) ==================== -->
+    <div id="memeDetailModal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl relative">
+        <button onclick="closeMemeDetail()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
+        <div id="memeDetailContent">
+          <!-- filled by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== DASHBOARD ==================== -->
+    <section id="page-dashboard" class="page-hidden transition-page">
+      <div class="flex flex-col md:flex-row gap-6">
+        <!-- Sidebar -->
+        <aside class="md:w-64 bg-white rounded-xl shadow p-4 h-fit">
+          <div class="flex items-center space-x-3 mb-6">
+            <img id="dashAvatar" src="https://ui-avatars.com/api/?name=Guest&background=38bdf8&color=fff" alt="avatar" class="w-12 h-12 rounded-full" />
+            <div>
+              <p class="font-semibold" id="dashUserName">Guest</p>
+              <p class="text-xs text-slate-500" id="dashUserRole">Explorer</p>
+            </div>
+          </div>
+          <nav class="space-y-2">
+            <a href="#" class="flex items-center space-x-2 text-slate-600 hover:text-sky-500 py-2 px-3 rounded-lg hover:bg-sky-50" data-page="dashboard"><i class="fas fa-chart-pie w-5"></i><span>Dashboard</span></a>
+            <a href="#" class="flex items-center space-x-2 text-slate-600 hover:text-sky-500 py-2 px-3 rounded-lg hover:bg-sky-50" data-page="generate"><i class="fas fa-plus-circle w-5"></i><span>Generate Meme</span></a>
+            <a href="#" class="flex items-center space-x-2 text-slate-600 hover:text-sky-500 py-2 px-3 rounded-lg hover:bg-sky-50" data-page="profile"><i class="fas fa-user w-5"></i><span>My Profile</span></a>
+            <a href="#" class="flex items-center space-x-2 text-slate-600 hover:text-sky-500 py-2 px-3 rounded-lg hover:bg-sky-50" data-page="gallery"><i class="fas fa-images w-5"></i><span>Gallery</span></a>
+          </nav>
+        </aside>
+
+        <!-- Main content -->
+        <div class="flex-1 space-y-6">
+          <div class="bg-white rounded-xl shadow p-6">
+            <h2 class="text-2xl font-bold text-slate-800">Welcome, <span id="dashGreet">Guest</span>!</h2>
+            <p class="text-slate-500">Here's your meme activity summary.</p>
+          </div>
+
+          <!-- Stats -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-xl shadow text-center">
+              <p class="text-2xl font-bold text-sky-500" id="statMemes">0</p>
+              <p class="text-sm text-slate-500">Memes Created</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow text-center">
+              <p class="text-2xl font-bold text-sky-500" id="statLikes">0</p>
+              <p class="text-sm text-slate-500">Likes Received</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow text-center">
+              <p class="text-2xl font-bold text-sky-500" id="statSaved">0</p>
+              <p class="text-sm text-slate-500">Saved Memes</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow text-center">
+              <p class="text-2xl font-bold text-sky-500" id="statDownloads">0</p>
+              <p class="text-sm text-slate-500">Downloads</p>
+            </div>
+          </div>
+
+          <!-- Quick create -->
+          <div class="bg-gradient-to-r from-sky-50 to-sky-100 p-6 rounded-xl shadow">
+            <h3 class="text-lg font-semibold text-slate-800">✨ Create a new meme now</h3>
+            <button onclick="navigateTo('generate')" class="mt-2 bg-sky-500 hover:bg-sky-600 text-white font-semibold px-6 py-2 rounded-lg transition">➕ Generate Meme</button>
+          </div>
+
+          <!-- Recent memes -->
+          <div>
+            <h3 class="text-xl font-bold text-slate-800 mb-3">Your Recent Memes</h3>
+            <div id="dashboardRecent" class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <!-- populated by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PROFILE ==================== -->
+    <section id="page-profile" class="page-hidden transition-page">
+      <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-xl shadow p-6 flex flex-col md:flex-row items-center md:items-start gap-6">
+          <img id="profileAvatar" src="https://ui-avatars.com/api/?name=Guest&background=38bdf8&color=fff" alt="avatar" class="w-24 h-24 rounded-full border-4 border-sky-200" />
+          <div class="flex-1 text-center md:text-left">
+            <h2 class="text-2xl font-bold text-slate-800" id="profileName">Guest</h2>
+            <p class="text-slate-500" id="profileBio">Meme explorer</p>
+            <p class="text-sm text-slate-400">Joined today</p>
+            <div class="flex justify-center md:justify-start gap-6 mt-2">
+              <span><span class="font-bold" id="profileMemeCount">0</span> memes</span>
+              <span><span class="font-bold" id="profileLikeCount">0</span> likes</span>
+              <span><span class="font-bold" id="profileSavedCount">0</span> saved</span>
+            </div>
+          </div>
+          <button onclick="navigateTo('dashboard')" class="bg-slate-200 hover:bg-slate-300 px-4 py-2 rounded-lg text-sm">Dashboard</button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="mt-6 border-b border-slate-200">
+          <nav class="flex space-x-6">
+            <button class="profile-tab active text-sky-500 border-b-2 border-sky-500 pb-2" data-tab="my">My Memes</button>
+            <button class="profile-tab text-slate-500 hover:text-sky-500 pb-2" data-tab="saved">Saved Memes</button>
+            <button class="profile-tab text-slate-500 hover:text-sky-500 pb-2" data-tab="settings">Settings</button>
+          </nav>
+        </div>
+
+        <div id="profileMyMemes" class="profile-tab-content mt-6">
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="profileMyGrid">
+            <!-- populated by JS -->
+          </div>
+        </div>
+        <div id="profileSavedMemes" class="profile-tab-content hidden mt-6">
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="profileSavedGrid">
+            <!-- populated by JS -->
+          </div>
+        </div>
+        <div id="profileSettings" class="profile-tab-content hidden mt-6">
+          <div class="bg-white p-6 rounded-xl shadow">
+            <h3 class="text-lg font-semibold mb-4">Account Settings</h3>
+            <form onsubmit="updateProfile(event)">
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-700">Display Name</label>
+                <input id="settingsName" type="text" class="w-full border border-slate-300 rounded-lg px-4 py-2" />
+              </div>
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-slate-700">Bio</label>
+                <textarea id="settingsBio" rows="2" class="w-full border border-slate-300 rounded-lg px-4 py-2"></textarea>
+              </div>
+              <button type="submit" class="bg-sky-500 hover:bg-sky-600 text-white px-6 py-2 rounded-lg">Update Profile</button>
+            </form>
+            <hr class="my-6" />
+            <button onclick="if(confirm('Reset all data?')){localStorage.removeItem('frostGuest'); location.reload();}" class="text-red-500 hover:underline">Reset My Data</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PRICING ==================== -->
+    <section id="page-pricing" class="page-hidden transition-page">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold text-slate-800">Choose Your Plan</h2>
+        <p class="text-slate-500">Start free, upgrade for more power (coming soon).</p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <div class="bg-white p-6 rounded-2xl shadow text-center">
+          <h3 class="text-xl font-bold">Free</h3>
+          <p class="text-4xl font-bold my-4">$0</p>
+          <ul class="text-left space-y-2 text-sm text-slate-600">
+            <li><i class="fas fa-check text-green-500 mr-2"></i> Unlimited AI generations</li>
+            <li><i class="fas fa-check text-green-500 mr-2"></i> All templates</li>
+            <li><i class="fas fa-check text-green-500 mr-2"></i> Community access</li>
+          </ul>
+          <button class="mt-6 w-full bg-slate-200 text-slate-700 py-2 rounded-lg">Current Plan</button>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow border-2 border-sky-400 relative">
+          <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-sky-500 text-white px-4 py-0.5 rounded-full text-xs">Popular</span>
+          <h3 class="text-xl font-bold">Pro</h3>
+          <p class="text-4xl font-bold my-4">$9<span class="text-lg text-slate-500">/mo</span></p>
+          <ul class="text-left space-y-2 text-sm text-slate-600">
+            <li><i class="fas fa-check text-green-500 mr-2"></i> HD downloads</li>
+            <li><i class="fas fa-check text-green-500 mr-2"></i> Custom image upload</li>
+            <li><i class="fas fa-check text-green-500 mr-2"></i> Priority support</li>
+          </ul>
+          <button class="mt-6 w-full bg-sky-500 hover:bg-sky-600 text-white py-2 rounded-lg transition">Upgrade</button>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow text-center">
+          <h3 class="text-xl font-bold">Enterprise</h3>
+          <p class="text-4xl font-bold my-4">Custom</p>
+          <ul class="text-left space-y-2 text-sm text-slate-600">
+            <li><i class="fas fa-check text-green-500 mr-2"></i> Everything in Pro</li>
+            <li><i class="fas fa-check text-green-500 mr-2"></i> Team collaboration</li>
+            <li><i class="fas fa-check text-green-500 mr-2"></i> Dedicated support</li>
+          </ul>
+          <button class="mt-6 w-full bg-slate-200 text-slate-700 py-2 rounded-lg">Contact Sales</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== ABOUT ==================== -->
+    <section id="page-about" class="page-hidden transition-page">
+      <div class="max-w-3xl mx-auto">
+        <h2 class="text-3xl font-bold text-slate-800">❄️ About FROST MEMES AI</h2>
+        <p class="text-slate-600 mt-4 text-lg">
+          We're on a mission to make meme creation effortless and fun. Our AI generates witty captions and suggests the perfect template, so you can focus on being creative.
+        </p>
+        <div class="mt-8 grid md:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-xl shadow">
+            <i class="fas fa-brain text-3xl text-sky-500"></i>
+            <h3 class="font-bold text-xl mt-2">AI-Powered</h3>
+            <p class="text-slate-600">State-of-the-art language models produce hilarious captions.</p>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow">
+            <i class="fas fa-users text-3xl text-sky-500"></i>
+            <h3 class="font-bold text-xl mt-2">Community Driven</h3>
+            <p class="text-slate-600">Share, like, and comment to build a vibrant meme culture.</p>
+          </div>
+        </div>
+        <div class="mt-8 bg-slate-100 p-6 rounded-xl">
+          <h3 class="font-bold">Our Team</h3>
+          <p class="text-slate-600">We're a small team of meme lovers and engineers.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== CONTACT ==================== -->
+    <section id="page-contact" class="page-hidden transition-page">
+      <div class="max-w-2xl mx-auto">
+        <h2 class="text-3xl font-bold text-slate-800">📬 Contact Us</h2>
+        <p class="text-slate-500 mb-6">Have feedback or need help? Drop us a message.</p>
+        <form onsubmit="event.preventDefault(); alert('Message sent (demo).');">
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-slate-700">Your Name</label>
+            <input type="text" class="w-full border border-slate-300 rounded-lg px-4 py-2" placeholder="Your name" required />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-slate-700">Email</label>
+            <input type="email" class="w-full border border-slate-300 rounded-lg px-4 py-2" placeholder="you@example.com" required />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-slate-700">Message</label>
+            <textarea rows="4" class="w-full border border-slate-300 rounded-lg px-4 py-2" placeholder="Your message..." required></textarea>
+          </div>
+          <button type="submit" class="bg-sky-500 hover:bg-sky-600 text-white px-6 py-2 rounded-lg transition">Send Message</button>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================================ -->
+  <!-- Footer -->
+  <!-- ============================================================ -->
+  <footer class="bg-slate-800 text-white mt-12 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <span class="text-xl font-bold">❄️ FROST MEMES AI</span>
+        <span class="text-xs bg-sky-600 px-2 py-0.5 rounded-full">v1.0</span>
+      </div>
+      <div class="flex space-x-6 mt-4 md:mt-0">
+        <a href="#" class="hover:text-sky-400" data-page="home">Home</a>
+        <a href="#" class="hover:text-sky-400" data-page="gallery">Gallery</a>
+        <a href="#" class="hover:text-sky-400" data-page="pricing">Pricing</a>
+        <a href="#" class="hover:text-sky-400" data-page="about">About</a>
+        <a href="#" class="hover:text-sky-400" data-page="contact">Contact</a>
+      </div>
+      <div class="flex space-x-4 mt-4 md:mt-0">
+        <i class="fab fa-twitter hover:text-sky-400 cursor-pointer"></i>
+        <i class="fab fa-instagram hover:text-sky-400 cursor-pointer"></i>
+        <i class="fab fa-youtube hover:text-sky-400 cursor-pointer"></i>
+      </div>
+    </div>
+    <div class="text-center text-sm text-slate-400 mt-6 border-t border-slate-700 pt-4">
+      &copy; 2026 FROST MEMES AI. All rights reserved.
+    </div>
+  </footer>
+
+  <!-- Bottom navigation (always visible) -->
+  <div class="bottom-nav">
+    <a href="#" class="flex flex-col items-center text-slate-500 hover:text-sky-500 text-xs" data-page="home"><i class="fas fa-home text-xl"></i><span>Home</span></a>
+    <a href="#" class="flex flex-col items-center text-slate-500 hover:text-sky-500 text-xs" data-page="generate"><i class="fas fa-plus-circle text-xl"></i><span>Create</span></a>
+    <a href="#" class="flex flex-col items-center text-slate-500 hover:text-sky-500 text-xs" data-page="gallery"><i class="fas fa-images text-xl"></i><span>Gallery</span></a>
+    <a href="#" class="flex flex-col items-center text-slate-500 hover:text-sky-500 text-xs" data-page="dashboard"><i class="fas fa-chart-pie text-xl"></i><span>Dashboard</span></a>
+    <a href="#" class="flex flex-col items-center text-slate-500 hover:text-sky-500 text-xs" data-page="profile"><i class="fas fa-user text-xl"></i><span>Profile</span></a>
+  </div>
+
+  <script>
+    // ============================================================
+    // DATA
+    // ============================================================
+    const TEMPLATES = {
+      drake: 'https://imgflip.com/s/meme/Drake-Hotline-Bling.jpg',
+      distracted: 'https://imgflip.com/s/meme/Distracted-Boyfriend.jpg',
+      twobuttons: 'https://imgflip.com/s/meme/Two-Buttons.jpg',
+      expanding: 'https://imgflip.com/s/meme/Expanding-Brain.jpg',
+      woman: 'https://imgflip.com/s/meme/Woman-Yelling-At-Cat.jpg'
+    };
+
+    let memes = [
+      { id: 1, title: 'Cat vs Pizza', caption: 'When you see pizza but it\'s not for you', template: 'drake', category: 'Animals', creator: 'alice', likes: 24, comments: 3, image: TEMPLATES.drake },
+      { id: 2, title: 'Monday Mood', caption: 'Me on Monday morning', template: 'distracted', category: 'Funny', creator: 'bob', likes: 42, comments: 7, image: TEMPLATES.distracted },
+      { id: 3, title: 'Programming life', caption: 'When the code works on the first try', template: 'expanding', category: 'Tech', creator: 'charlie', likes: 18, comments: 2, image: TEMPLATES.expanding },
+      { id: 4, title: 'Relationship goals', caption: 'Me vs my girlfriend', template: 'woman', category: 'Relatable', creator: 'dave', likes: 31, comments: 5, image: TEMPLATES.woman },
+      { id: 5, title: 'Brain expansion', caption: '10 years of evolution', template: 'expanding', category: 'Tech', creator: 'eve', likes: 56, comments: 12, image: TEMPLATES.expanding },
+      { id: 6, title: 'Distracted at work', caption: 'When you hear the office microwave', template: 'distracted', category: 'Funny', creator: 'frank', likes: 9, comments: 1, image: TEMPLATES.distracted },
+    ];
+
+    let currentUser = null; // guest user
+    let nextMemeId = 7;
+
+    // ============================================================
+    // UTILITY
+    // ============================================================
+    function saveUser() {
+      localStorage.setItem('frostGuest', JSON.stringify(currentUser));
+    }
+
+    function loadUser() {
+      const data = localStorage.getItem('frostGuest');
+      if (data) {
+        try { currentUser = JSON.parse(data); } catch(e) { currentUser = null; }
+      }
+      if (!currentUser) {
+        // Create default guest
+        currentUser = {
+          name: 'Guest',
+          email: 'guest@frost.local',
+          role: 'user',
+          memes: [],
+          saved: [],
+          bio: 'Meme explorer',
+          joined: new Date().toISOString().slice(0,10)
+        };
+        saveUser();
+      }
+    }
+
+    function getMemeImage(template) {
+      return TEMPLATES[template] || TEMPLATES.drake;
+    }
+
+    function generateId() { return nextMemeId++; }
+
+    // ============================================================
+    // NAVIGATION
+    // ============================================================
+    function navigateTo(page) {
+      document.querySelectorAll('.transition-page').forEach(el => {
+        el.classList.remove('page-visible');
+        el.classList.add('page-hidden');
+      });
+      const target = document.getElementById('page-' + page);
+      if (target) {
+        target.classList.remove('page-hidden');
+        target.classList.add('page-visible');
+      }
+      document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll(`.nav-link[data-page="${page}"]`).forEach(el => el.classList.add('active'));
+      document.getElementById('mobileMenu').classList.add('hidden');
+      window.scrollTo(0, 0);
+      renderPage(page);
+    }
+
+    function renderPage(page) {
+      switch(page) {
+        case 'home': renderTrending(); break;
+        case 'dashboard': renderDashboard(); break;
+        case 'gallery': renderGallery(); break;
+        case 'profile': renderProfile(); break;
+        default: break;
+      }
+    }
+
+    // ============================================================
+    // RENDER: TRENDING
+    // ============================================================
+    function renderTrending() {
+      const container = document.getElementById('trendingPreview');
+      const sorted = [...memes].sort((a,b) => b.likes - a.likes).slice(0,6);
+      container.innerHTML = sorted.map(m => `
+        <div class="bg-white rounded-lg shadow overflow-hidden cursor-pointer hover:shadow-lg transition" onclick="openMemeDetail(${m.id})">
+          <img src="${m.image}" alt="${m.title}" class="w-full h-28 object-cover" />
+          <div class="p-2 text-xs truncate">${m.title}</div>
+        </div>
+      `).join('');
+    }
+
+    // ============================================================
+    // RENDER: DASHBOARD
+    // ============================================================
+    function renderDashboard() {
+      if (!currentUser) return;
+      document.getElementById('dashGreet').textContent = currentUser.name;
+      document.getElementById('dashUserName').textContent = currentUser.name;
+      document.getElementById('dashUserRole').textContent = 'Explorer';
+      document.getElementById('dashAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=38bdf8&color=fff`;
+
+      const userMemes = memes.filter(m => m.creator === currentUser.email);
+      const userLikes = userMemes.reduce((sum, m) => sum + m.likes, 0);
+      const userSaved = currentUser.saved ? currentUser.saved.length : 0;
+      document.getElementById('statMemes').textContent = userMemes.length;
+      document.getElementById('statLikes').textContent = userLikes;
+      document.getElementById('statSaved').textContent = userSaved;
+      document.getElementById('statDownloads').textContent = Math.floor(Math.random() * 10);
+
+      const recent = userMemes.slice(-3).reverse();
+      const container = document.getElementById('dashboardRecent');
+      container.innerHTML = recent.length ? recent.map(m => `
+        <div class="bg-white rounded-lg shadow overflow-hidden cursor-pointer hover:shadow-lg" onclick="openMemeDetail(${m.id})">
+          <img src="${m.image}" alt="${m.title}" class="w-full h-32 object-cover" />
+          <div class="p-2 text-sm truncate">${m.title}</div>
+        </div>
+      `).join('') : '<div class="col-span-3 text-slate-400 text-center py-4">No memes created yet. <a href="#" onclick="navigateTo(\'generate\')" class="text-sky-500 hover:underline">Create one now</a></div>';
+    }
+
+    // ============================================================
+    // RENDER: GALLERY
+    // ============================================================
+    function renderGallery() {
+      const search = document.getElementById('gallerySearch').value.toLowerCase();
+      const category = document.getElementById('galleryCategory').value;
+      const sort = document.getElementById('gallerySort').value;
+      let filtered = memes.filter(m => {
+        const matchSearch = m.title.toLowerCase().includes(search) || m.creator.toLowerCase().includes(search);
+        const matchCat = category === 'all' || m.category === category;
+        return matchSearch && matchCat;
+      });
+      if (sort === 'latest') filtered.sort((a,b) => b.id - a.id);
+      else if (sort === 'trending') filtered.sort((a,b) => b.likes - a.likes);
+      else if (sort === 'top') filtered.sort((a,b) => (b.likes + b.comments) - (a.likes + a.comments));
+      const container = document.getElementById('galleryGrid');
+      container.innerHTML = filtered.map(m => `
+        <div class="bg-white rounded-xl shadow overflow-hidden hover:shadow-xl transition cursor-pointer" onclick="openMemeDetail(${m.id})">
+          <img src="${m.image}" alt="${m.title}" class="w-full h-48 object-cover" />
+          <div class="p-3">
+            <h3 class="font-bold truncate">${m.title}</h3>
+            <div class="flex justify-between text-sm text-slate-500 mt-1">
+              <span>by ${m.creator}</span>
+              <span><i class="far fa-heart text-red-400"></i> ${m.likes}</span>
+            </div>
+            <span class="text-xs bg-slate-100 px-2 py-0.5 rounded-full">${m.category}</span>
+          </div>
+        </div>
+      `).join('') || '<div class="col-span-full text-center text-slate-400 py-10">No memes found.</div>';
+    }
+
+    // ============================================================
+    // MEME DETAIL MODAL
+    // ============================================================
+    function openMemeDetail(id) {
+      const meme = memes.find(m => m.id === id);
+      if (!meme) return;
+      const modal = document.getElementById('memeDetailModal');
+      const content = document.getElementById('memeDetailContent');
+      const isSaved = currentUser && currentUser.saved && currentUser.saved.includes(id);
+      content.innerHTML = `
+        <div class="flex flex-col md:flex-row gap-6">
+          <div class="md:w-1/2">
+            <img src="${meme.image}" alt="${meme.title}" class="rounded-lg shadow w-full" />
+          </div>
+          <div class="md:w-1/2">
+            <h2 class="text-2xl font-bold">${meme.title}</h2>
+            <p class="text-slate-500">by ${meme.creator} • ${meme.category}</p>
+            <p class="mt-2 text-lg italic">"${meme.caption}"</p>
+            <div class="flex items-center gap-4 mt-4">
+              <button onclick="toggleLike(${meme.id})" class="flex items-center gap-1 text-red-500 hover:text-red-700">
+                <i class="fas fa-heart"></i> <span id="likeCount${meme.id}">${meme.likes}</span>
+              </button>
+              <button onclick="toggleSave(${meme.id})" class="flex items-center gap-1 text-indigo-500 hover:text-indigo-700">
+                <i class="fas fa-bookmark"></i> <span>${isSaved ? 'Saved' : 'Save'}</span>
+              </button>
+              <button onclick="alert('Share link copied (demo)')" class="text-slate-500 hover:text-slate-700"><i class="fas fa-share-alt"></i></button>
+            </div>
+            <div class="mt-6">
+              <h4 class="font-semibold">Comments (${meme.comments})</h4>
+              <div class="space-y-2 mt-2 text-sm">
+                <div class="flex items-start gap-2"><span class="font-medium">user1</span><span class="text-slate-600">😂 This is so true!</span></div>
+                <div class="flex items-start gap-2"><span class="font-medium">user2</span><span class="text-slate-600">Love it!</span></div>
+              </div>
+              <div class="mt-3 flex gap-2">
+                <input type="text" placeholder="Add a comment..." class="flex-1 border border-slate-300 rounded-lg px-3 py-1 text-sm" />
+                <button onclick="alert('Comment added (demo)')" class="bg-sky-500 text-white px-3 py-1 rounded-lg text-sm">Post</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      modal.classList.remove('hidden');
+    }
+
+    function closeMemeDetail() {
+      document.getElementById('memeDetailModal').classList.add('hidden');
+    }
+    document.getElementById('memeDetailModal').addEventListener('click', function(e) {
+      if (e.target === this) closeMemeDetail();
+    });
+
+    function toggleLike(id) {
+      const meme = memes.find(m => m.id === id);
+      if (!meme) return;
+      meme.likes += 1;
+      saveUser();
+      const countEl = document.getElementById(`likeCount${id}`);
+      if (countEl) countEl.textContent = meme.likes;
+      renderGallery();
+      renderTrending();
+    }
+
+    function toggleSave(id) {
+      if (!currentUser) {
+        // Should never happen because we always have a guest
+        alert('Please refresh the page.');
+        return;
+      }
+      if (!currentUser.saved) currentUser.saved = [];
+      const idx = currentUser.saved.indexOf(id);
+      if (idx > -1) {
+        currentUser.saved.splice(idx, 1);
+      } else {
+        currentUser.saved.push(id);
+      }
+      saveUser();
+      renderDashboard();
+      openMemeDetail(id); // refresh modal
+    }
+
+   // ============================================================
+// GENERATE
+// ============================================================
+
+async function handleGenerate() {
+
+    const prompt = document.getElementById("memePrompt").value.trim();
+
+    if (!prompt) {
+        alert("Please enter a meme idea.");
+        return;
+    }
+
+    const btn = document.getElementById("generateBtn");
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Generating...';
+
+    try {
+ 
+      const prompt = document.getElementById("memePrompt").value.trim();    
+const category = document.getElementById("memeCategory").value;
+
+const memeDatabase = {
+   animals: [
+    "memes/animals/images (1).jfif",
+    "memes/animals/images (2).jfif",
+    "memes/animals/images (3).jfif",
+    "memes/animals/images.jfif"
+],
+
+   movies: [
+    "memes/movies/images (1).jfif",
+    "memes/movies/images (4).jfif",
+    "memes/movies/images.jfif"
+],
+
+    relatable: [
+     "memes/relatable/images (1).jfif", 
+     "memes/relatable/images.jfif",
+    ],
+
+   
+    tech: [
+   "memes/tech/images.jfif",
+    "memes/tech/https___dev-to-uploads.s3.amazonaws.com_uploads_articles_7si8jfsjdhatsdw5gxll.webp",
+    "memes/tech/download.jfif",
+  ]
+};
+const memes = memeDatabase[category];
+
+if (!memes || memes.length === 0) {
+    alert("No memes added in this category yet.");
+ 
+    return;
+}
+
+const randomMeme = memes[Math.floor(Math.random() * memes.length)];
+document.getElementById("resultImage").src = randomMeme;
+document.getElementById("resultCaption").value = prompt;
+document.getElementById("resultTemplate").value = category;
+document.getElementById("memeResult").classList.remove("hidden");
+
+
+  btn.disabled = false;
+btn.innerHTML = `<i class="fas fa-wand-magic-sparkles mr-2"></i> Generate Meme`;     
+
+
+return;
+}
+    
+    catch (error) {
+        console.error(error);
+        alert("AI generation failed.");
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-wand-magic-sparkles mr-2"></i> Generate Meme';
+}
+
+function updateMemePreview() {
+    // AI generates the image automatically
+}
+
+function downloadMeme() {
+    const img = document.getElementById("resultImage");
+    const link = document.createElement("a");
+    link.href = img.src;
+    link.download = "frost-meme.png";
+    link.click();
+}
+
+function saveMeme() {
+
+    const latest = memes[memes.length - 1];
+
+    if (!currentUser.saved) {
+        currentUser.saved = [];
+    }
+
+    currentUser.saved.push(latest.id);
+
+    saveUser();
+
+    renderDashboard();
+
+    renderProfile();
+
+    alert("✅ Meme saved!");
+
+}
+
+    function renderProfile() {
+      if (!currentUser) return;
+      document.getElementById('profileAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=38bdf8&color=fff`;
+      document.getElementById('profileName').textContent = currentUser.name;
+      document.getElementById('profileBio').textContent = currentUser.bio || 'Meme explorer';
+      document.getElementById('settingsName').value = currentUser.name;
+      document.getElementById('settingsBio').value = currentUser.bio || '';
+
+      const userMemes = memes.filter(m => m.creator === currentUser.email);
+      const userLikes = userMemes.reduce((sum, m) => sum + m.likes, 0);
+      document.getElementById('profileMemeCount').textContent = userMemes.length;
+      document.getElementById('profileLikeCount').textContent = userLikes;
+      document.getElementById('profileSavedCount').textContent = currentUser.saved ? currentUser.saved.length : 0;
+
+      const myContainer = document.getElementById('profileMyGrid');
+      myContainer.innerHTML = userMemes.length ? userMemes.map(m => `
+        <div class="bg-white rounded-lg shadow overflow-hidden cursor-pointer hover:shadow-lg" onclick="openMemeDetail(${m.id})">
+          <img src="${m.image}" class="w-full h-32 object-cover" />
+          <div class="p-2 text-sm truncate">${m.title}</div>
+        </div>
+      `).join('') : '<div class="col-span-full text-slate-400 text-center py-4">No memes created yet.</div>';
+
+      const savedContainer = document.getElementById('profileSavedGrid');
+      const savedMemes = memes.filter(m => currentUser.saved && currentUser.saved.includes(m.id));
+      savedContainer.innerHTML = savedMemes.length ? savedMemes.map(m => `
+        <div class="bg-white rounded-lg shadow overflow-hidden cursor-pointer hover:shadow-lg" onclick="openMemeDetail(${m.id})">
+          <img src="${m.image}" class="w-full h-32 object-cover" />
+          <div class="p-2 text-sm truncate">${m.title}</div>
+        </div>
+      `).join('') : '<div class="col-span-full text-slate-400 text-center py-4">No saved memes.</div>';
+    }
+
+    function updateProfile(e) {
+      e.preventDefault();
+      if (!currentUser) return;
+      currentUser.name = document.getElementById('settingsName').value.trim() || currentUser.name;
+      currentUser.bio = document.getElementById('settingsBio').value.trim();
+      saveUser();
+      renderProfile();
+      renderDashboard();
+      alert('Profile updated!');
+    }
+
+    document.querySelectorAll('.profile-tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active', 'text-sky-500', 'border-sky-500'));
+        this.classList.add('active', 'text-sky-500', 'border-sky-500');
+        const tabName = this.dataset.tab;
+        document.querySelectorAll('.profile-tab-content').forEach(el => el.classList.add('hidden'));
+        if (tabName === 'my') document.getElementById('profileMyMemes').classList.remove('hidden');
+        else if (tabName === 'saved') document.getElementById('profileSavedMemes').classList.remove('hidden');
+        else if (tabName === 'settings') document.getElementById('profileSettings').classList.remove('hidden');
+      });
+    });
+
+    // ============================================================
+    // MOBILE MENU
+    // ============================================================
+    document.getElementById('menuBtn').addEventListener('click', function() {
+      document.getElementById('mobileMenu').classList.toggle('hidden');
+    });
+
+    // ============================================================
+    // NAV LINKS
+    // ============================================================
+    document.querySelectorAll('.nav-link[data-page]').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        navigateTo(this.dataset.page);
+      });
+    });
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    loadUser();
+    navigateTo('home');
+
+    // Expose functions globally
+    window.navigateTo = navigateTo;
+    window.handleGenerate = handleGenerate;
+    window.updateMemePreview = updateMemePreview;
+    window.downloadMeme = downloadMeme;
+    window.saveMeme = saveMeme;
+    window.openMemeDetail = openMemeDetail;
+    window.closeMemeDetail = closeMemeDetail;
+    window.toggleLike = toggleLike;
+    window.toggleSave = toggleSave;
+    window.renderGallery = renderGallery;
+    window.renderProfile = renderProfile;
+    window.updateProfile = updateProfile;
+  </script>
+</body>
+</html>
